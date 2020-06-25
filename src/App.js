@@ -37,7 +37,8 @@ class App extends Component {
     return (
       <>
         <Searchbar onSubmit={this.handleSubmit} />
-        <ImageGallery />
+        <ImageGallery listImages={listImages} onClick={this.openModal} />
+        <Loader/>
       </>
     );
   }
