@@ -5,7 +5,7 @@ class Modal extends Component {
   render() {
     return (
       <>
-        <div onClick={this.closeModal} className={styles.Overlay}>
+        <div onClick={this.openModal} className={styles.Overlay}>
           <div className={styles.Modal}>
             <img src={largeImage} alt="" />
           </div>
