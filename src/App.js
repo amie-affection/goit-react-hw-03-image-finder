@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import styles from "./App.module.css";
 import fetchImagesWithQuery from "./services/api";
 import Searchbar from "./components/searchbar/Searchbar";
 import Loader from "./components/loader/Loader";
@@ -9,7 +8,7 @@ import Modal from "./components/modal/Modal";
 
 class App extends Component {
   state = {
-    searchQuery: "",
+    searchQuery: "panda",
     page: 1,
     listImages: null,
     loading: false,
@@ -17,39 +16,71 @@ class App extends Component {
   };
 
   componentDidMount() {
+    fetchImagesWithQuery(this.state.searchQuery)
+      .then((data) => this.setState({ listImages: data }))
+      .catch((error) => console.log("Error:", error));
     console.log("componentDidMount");
   }
 
   componentDidUpdate(prevProps, prevState) {
     console.log("componentDidUpdate");
-    if (prevState.searchQuery === this.state.searchQuery) {
-      return;
+
+    if (prevState.searchQuery !== this.state.searchQuery) {
+      // console.log(this.state.searchQuery);
+      fetchImagesWithQuery(this.state.searchQuery)
+        .then((data) => {
+          this.setState({ listImages: data, page: 1 });
+        })
+        .catch((error) => {});
     }
-    // console.log(this.state.searchQuery);
-    fetchImagesWithQuery(this.state.searchQuery)
-      .then((data) => {
-        this.setState({ listImages: data });
-      })
-      .catch((error) => {});
+
+    if (prevState.page !== this.state.page) {
+      fetchImagesWithQuery(this.state.searchQuery, this.state.page)
+        .then((data) => {
+          this.setState((prevState) => ({
+            listImages: [...prevState.listImages, ...data],
+          }));
+
+          window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: "smooth",
+          })
+        })
+
+        .catch((error) => {});
+    }
   }
 
   handleSubmit = (searchQuery) => {
     this.setState({ searchQuery });
   };
 
+  loadMore = () => {
+    this.setState((prevState) => ({ page: prevState.page + 1 }));
+    // this.handleSubmit();
+  };
+
   openModal = (imageURL) => {
-    this.setState({ largeImage: imageURL });
+    this.setState({ largeImage: imageURL, showModal: true });
+  };
+
+  onClose = () => {
+    this.setState({ showModal: false });
   };
 
   render() {
-    const { listImages, largeImage, loading } = this.state;
+    const { listImages, largeImage, loading, showModal } = this.state;
     return (
       <>
         <Searchbar onSubmit={this.handleSubmit} />
-        {listImages && <ImageGallery listImages={listImages} />}
+        {listImages && (
+          <ImageGallery listImages={listImages} onClick={this.openModal} />
+        )}
         {loading && <Loader />}
-        {listImages && <Button />}
-        <Modal />
+        {listImages && <Button onClick={this.loadMore} />}
+        {showModal && (
+          <Modal url={this.state.largeImage} onClose={this.onClose} />
+        )}
       </>
     );
   }
