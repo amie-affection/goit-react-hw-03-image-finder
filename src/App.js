@@ -19,23 +19,27 @@ class App extends Component {
     fetchImagesWithQuery(this.state.searchQuery)
       .then((data) => this.setState({ listImages: data }))
       .catch((error) => console.log("Error:", error));
-    console.log("componentDidMount");
+    // console.log("componentDidMount");
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log("componentDidUpdate");
+    // console.log("componentDidUpdate");
 
     if (prevState.searchQuery !== this.state.searchQuery) {
-      // console.log(this.state.searchQuery);
-      fetchImagesWithQuery(this.state.searchQuery)
-        .then((data) => {
-          this.setState({ listImages: data, page: 1 });
-        })
-        .catch((error) => {});
+      // console.log('Search: ', this.state.searchQuery, this.state.page);
+      
+      
+      return fetchImagesWithQuery(this.state.searchQuery, 1)
+      .then((data) => {
+        this.setState({ listImages: data, page: 1 });
+      })
+      .catch((error) => {});
     }
+    
+    if (prevState.page !== this.state.page && this.state.page !== 1) {
+      // console.log("LoadMore: ", this.state.searchQuery, this.state.page);
 
-    if (prevState.page !== this.state.page) {
-      fetchImagesWithQuery(this.state.searchQuery, this.state.page)
+      return fetchImagesWithQuery(this.state.searchQuery, this.state.page)
         .then((data) => {
           this.setState((prevState) => ({
             listImages: [...prevState.listImages, ...data],
